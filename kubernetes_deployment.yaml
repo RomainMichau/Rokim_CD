@@ -1,8 +1,45 @@
 ---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: rokim_cd
+  name: svc-rokim-cd
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rokim-cd-role
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "update"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  namespace: rokim_cd
+  name: rokim-cd-role-binding
+subjects:
+  - kind: ServiceAccount
+    namespace: rokim_cd
+    name: svc-rokim-cd
+roleRef:
+  kind: ClusterRole
+  name: rokim-cd-role
+  apiGroup: rbac.authorization.k8s.io
+
+
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: rokim-cd-deployment
+  name: rokim_cd
+  namespace: rokim_cd
   labels:
     app.kubernetes.io/name: rokim-cd
 spec:
@@ -15,13 +52,14 @@ spec:
       labels:
         app.kubernetes.io/name: rokim-cd
     spec:
+      serviceAccountName: svc-rokim-cd
       containers:
         - name: rokim-cd
-          image: ghcr.io/romainmichau/rokim_cd:latest  # Replace with your Docker image and tag
+          image: rokim_cd  # Replace with your Docker image and tag
+          imagePullPolicy: Always
           volumeMounts:
             - name: config-volume
-              mountPath: /config.yaml
-              subPath: config.yaml
+              mountPath: /etc/rokim_cd
           env:
             - name: GITHUB_TOKEN
               valueFrom:
@@ -36,6 +74,7 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  namespace: rokim_cd
   name: rokim-cd-config
 data:
   config.yaml: |
@@ -45,15 +84,25 @@ data:
       username: romainmichau
       k8s_namespace: rokim-apps
       k8s_deployment: hugo-blog-draft
-
+    
     - image_name: hugo_blog
       tag: latest
       username: romainmichau
       k8s_namespace: rokim-apps
       k8s_deployment: hugo-blog-prod
-
+    
     - image_name: connect4_ui
       tag: latest
       username: romainmichau
       k8s_namespace: rokim-apps
       k8s_deployment: connect4-ui
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  namespace: rokim_cd
+  name: rokim-cd-secret
+type: Opaque
+data:
+  github_token: "base64 encoded github token"

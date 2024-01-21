@@ -26,10 +26,17 @@ type Flags struct {
 
 func ParseFlags() Flags {
 	kubeconfig := flag.String("kubeconfig", "", "path to kubeconfig file")
-	confFile := flag.String("conf", "/etc/rokim_cd/config.yaml", "path of the conf file")
+	confFile := flag.String("conf", "", "path of the conf file")
 	intervalSeconds := flag.Int64("interval-seconds", 60, "Interval between each check in seconds")
 	githubToken := flag.String("token", "", "github token")
 	flag.Parse()
+	if *confFile == "" {
+		if os.Getenv("ROKIM_CD_CONF_FILE") != "" {
+			*confFile = os.Getenv("ROKIM_CD_CONF_FILE")
+		} else {
+			*confFile = "/etc/rokim_cd/config.yaml"
+		}
+	}
 	if *githubToken == "" {
 		if os.Getenv("GITHUB_TOKEN") != "" {
 			*githubToken = os.Getenv("GITHUB_TOKEN")
@@ -40,6 +47,9 @@ func ParseFlags() Flags {
 	}
 	log.Infof("conf file: %s", *confFile)
 	log.Infof("Run interval: %d seconds", *intervalSeconds)
+	if *kubeconfig == "" {
+		log.Infof("--kubeconfig flag undefine, will use in cluster kube config")
+	}
 	return Flags{
 		kubeconfig:      *kubeconfig,
 		confFile:        *confFile,
@@ -106,7 +116,7 @@ func restartDeployment(deploymentName string, namespace string, clientset *kuber
 		log.Error(fmt.Sprintf("Error restarting deployment %s (namespace: %s)", deploymentName, namespace), err.Error())
 		return err
 	}
-
+	log.Infof("Deployment %s restarted", deploymentName)
 	return nil
 }
 
@@ -185,6 +195,7 @@ func main() {
 		log.Fatal("Error getting kubernetes client", err.Error())
 	}
 	for {
+		redeploy := false
 		for _, appConf := range appConfs {
 			upstreamDigest, err := getUpstreamImageDigest(appConf, flags.githubToken)
 			if err != nil {
@@ -199,7 +210,11 @@ func main() {
 			} else {
 				log.Infof("deployment %s is using old image: %s. Restarting...", appConf.FullName(), upstreamDigest)
 				restartDeployment(appConf.K8sDeployment, appConf.K8sNamespace, clientset)
+				redeploy = true
 			}
+		}
+		if !redeploy {
+			log.Info("No deployment to restart")
 		}
 		time.Sleep(time.Duration(flags.intervalSeconds) * time.Second)
 	}

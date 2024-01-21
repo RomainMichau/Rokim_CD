@@ -17,7 +17,7 @@ If the image is not up to date, the app will restart the deployment with the lat
 | `--kubeconfig`       | Path of the local kube config file.<br/> If empty the application will consider that it is running on the cluster itself. | ""                        |
 | `--token`            | Github token. Required read-package permission                                                                            | Env var $GITHUB_TOKEN     |
 | `--interval-seconds` | Interval between two checks in seconds                                                                                    | 60                        |
-| `--namespace`        | Path of the configuration                                                                                                 | /etc/rokim_cd/config.yaml |
+| `--conf`             | Path of the configuration. If empty will use $ROKIM_CD_CONF_FILE                                                          | /etc/rokim_cd/config.yaml |
 
 # Configuration file
 
