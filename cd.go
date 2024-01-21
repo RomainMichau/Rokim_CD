@@ -81,12 +81,14 @@ func getUpstreamImageDigest(appConf AppConf, token string) (string, error) {
 		return "", fmt.Errorf("Error sending HTTP request: %v", err)
 	}
 	defer response.Body.Close()
+	body, err := io.ReadAll(response.Body)
 
 	if !isSuccessStatus(response.StatusCode) {
-		return "", fmt.Errorf("Failed to get image manifest. Status code: %d", response.StatusCode)
+		body_str := string(body)
+		return "", fmt.Errorf("Failed to get image manifest. Status code: %d Body: %s", response.StatusCode,
+			body_str)
 	}
 
-	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		return "", fmt.Errorf("Error reading response body: %v", err)
 	}
