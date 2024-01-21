@@ -60,7 +60,7 @@ Example:
 ## Oustide the cluster in docker
 ```bash
 docker run -v ./example_conf.yaml:/etc/conf.yaml  -v /home/rmichau/.kube/config:/etc/kconfig  ghcr.io/romainmichau/rokim_cd:latest 
-    --token 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 --conf /etc/conf.yaml --kubeconfig /etc/kconfig
+    --token [GITHUB_TOKEN] --conf /etc/conf.yaml --kubeconfig /etc/kconfig
 ```
 ## Inside kube the cluster
 Check [kubernetes configuration for this app](./kubernetes_deployment.yaml)
