@@ -26,7 +26,7 @@ type Flags struct {
 
 func ParseFlags() Flags {
 	kubeconfig := flag.String("kubeconfig", "", "path to kubeconfig file")
-	confFile := flag.String("conf", "/rokim_cd_config.yaml", "path of the conf file")
+	confFile := flag.String("conf", "/etc/rokim_cd/config.yaml", "path of the conf file")
 	intervalSeconds := flag.Int64("interval-seconds", 60, "Interval between each check in seconds")
 	githubToken := flag.String("token", "", "github token")
 	flag.Parse()
