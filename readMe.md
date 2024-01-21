@@ -46,7 +46,7 @@ Example:
   k8s_deployment: connect4-ui
 ```
 
-# Fields:
+## Fields:
 
 | Field            | Description                                        |
 |------------------|----------------------------------------------------|
@@ -55,3 +55,18 @@ Example:
 | `username`       | Github username                                    |
 | `k8s_namespace`  | Kubernetes namespace to watch                      |
 | `k8s_deployment` | Kubernetes deployment to watch                     |
+
+# Usage
+## Oustide the cluster in docker
+```bash
+docker run -v ./example_conf.yaml:/etc/conf.yaml  -v /home/rmichau/.kube/config:/etc/kconfig  ghcr.io/romainmichau/rokim_cd:latest 
+    --token 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 --conf /etc/conf.yaml --kubeconfig /etc/kconfig
+```
+## Inside kube the cluster
+Check [kubernetes configuration for this app](./kubernetes_deployment.yaml)
+It:
+- Create a secret with the github token
+- Create a configmap with the configuration file
+- Create a deployment with the app
+- Create a ClusterRole to allow the app to read deployments and restart them
+- Create a ClusterRoleBinding to bind the ClusterRole to the service account of the deployment
