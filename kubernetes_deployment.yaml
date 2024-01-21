@@ -1,0 +1,59 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rokim-cd-deployment
+  labels:
+    app.kubernetes.io/name: rokim-cd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: rokim-cd
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: rokim-cd
+    spec:
+      containers:
+        - name: rokim-cd
+          image: ghcr.io/romainmichau/rokim_cd:latest  # Replace with your Docker image and tag
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config.yaml
+              subPath: config.yaml
+          env:
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: rokim-cd-secret
+                  key: github_token
+      volumes:
+        - name: config-volume
+          configMap:
+            name: rokim-cd-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rokim-cd-config
+data:
+  config.yaml: |
+    ---
+    - image_name: hugo_blog
+      tag: latest
+      username: romainmichau
+      k8s_namespace: rokim-apps
+      k8s_deployment: hugo-blog-draft
+
+    - image_name: hugo_blog
+      tag: latest
+      username: romainmichau
+      k8s_namespace: rokim-apps
+      k8s_deployment: hugo-blog-prod
+
+    - image_name: connect4_ui
+      tag: latest
+      username: romainmichau
+      k8s_namespace: rokim-apps
+      k8s_deployment: connect4-ui

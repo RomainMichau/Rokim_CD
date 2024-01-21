@@ -1,0 +1,18 @@
+---
+- image_name: hugo_blog
+  tag: latest
+  username: romainmichau
+  k8s_namespace: rokim-apps
+  k8s_deployment: hugo-blog-draft
+
+- image_name: hugo_blog
+  tag: latest
+  username: romainmichau
+  k8s_namespace: rokim-apps
+  k8s_deployment: hugo-blog-prod
+
+- image_name: connect4_ui
+  tag: latest
+  username: romainmichau
+  k8s_namespace: rokim-apps
+  k8s_deployment: connect4-ui
