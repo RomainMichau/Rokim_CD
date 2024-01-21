@@ -110,6 +110,9 @@ func restartDeployment(deploymentName string, namespace string, clientset *kuber
 		return err
 	}
 
+	if deployment.Spec.Template.ObjectMeta.Annotations == nil {
+		deployment.Spec.Template.ObjectMeta.Annotations = make(map[string]string)
+	}
 	deployment.Spec.Template.ObjectMeta.Annotations["kubectl.kubernetes.io/restartedAt"] = metav1.Now().Format(time.RFC3339)
 	_, err = clientset.AppsV1().Deployments(namespace).Update(context.TODO(), deployment, metav1.UpdateOptions{})
 	if err != nil {
@@ -140,7 +143,12 @@ func deploymentIsUsingImageId(deploymentName string, namespace string, upstreamI
 
 	for _, pod := range pods.Items {
 		for _, container := range pod.Status.ContainerStatuses {
-			digest := strings.Split(container.ImageID, "@")[1]
+			split := strings.Split(container.ImageID, "@")
+			if len(split) != 2 {
+				log.Error(fmt.Sprintf("Error parsing image ID: %s", container.ImageID))
+				return false, nil
+			}
+			digest := split[1]
 			if digest == upstreamImageDigest {
 				return true, nil
 			}
