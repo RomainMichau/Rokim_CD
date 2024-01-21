@@ -131,7 +131,7 @@ func deploymentIsUsingImageId(deploymentName string, namespace string, upstreamI
 		for _, container := range pod.Status.ContainerStatuses {
 			digest := strings.Split(container.ImageID, "@")[1]
 			if digest == upstreamImageDigest {
-				return false, nil
+				return true, nil
 			}
 		}
 	}
