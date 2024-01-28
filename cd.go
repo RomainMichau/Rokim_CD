@@ -209,11 +209,13 @@ func main() {
 		for _, appConf := range appConfs {
 			upstreamDigest, err := getUpstreamImageDigest(appConf, flags.githubToken)
 			if err != nil {
-				log.Fatal("Error fetching upstream ID", err.Error())
+				log.Errorf("Error fetching upstream ID for %s: %s", appConf.FullName(), err.Error())
+				continue
 			}
 			isUsingLastImageVersion, err := deploymentIsUsingImageId(appConf.K8sDeployment, appConf.K8sNamespace, upstreamDigest, clientset)
 			if err != nil {
-				log.Fatal("Error checking if deployment is using image", err.Error())
+				log.Error("Error checking if deployment is using image ", err.Error())
+				continue
 			}
 			if isUsingLastImageVersion {
 				log.Debugf("deployment %s is already using up to date image: %s", appConf.FullName(), upstreamDigest)
